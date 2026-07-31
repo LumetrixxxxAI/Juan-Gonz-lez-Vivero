@@ -133,12 +133,7 @@ document.addEventListener('DOMContentLoaded', function () {
   itemsGaleria.forEach(function (item) {
     item.addEventListener('click', function () {
       var foto = item.querySelector('.foto-real');
-      var placeholder = item.querySelector('.img-placeholder');
-      if (foto) {
-        abrirLightbox('<img src="' + foto.src + '" alt="' + foto.alt + '" style="width:100%;height:100%;object-fit:contain;">');
-      } else {
-        abrirLightbox(placeholder ? placeholder.outerHTML : '');
-      }
+      abrirLightbox('<img src="' + foto.src + '" alt="' + foto.alt + '" style="width:100%;height:100%;object-fit:contain;">');
     });
   });
   if (lightboxCerrar) lightboxCerrar.addEventListener('click', cerrarLightbox);
