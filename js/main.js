@@ -1,0 +1,173 @@
+document.addEventListener('DOMContentLoaded', function () {
+
+  // ---------- Año footer ----------
+  var anio = document.getElementById('anio');
+  if (anio) anio.textContent = new Date().getFullYear();
+
+  // ---------- Header al hacer scroll ----------
+  var header = document.getElementById('header');
+  function actualizarHeader() {
+    if (window.scrollY > 30) header.classList.add('scrolled');
+    else header.classList.remove('scrolled');
+  }
+  actualizarHeader();
+  window.addEventListener('scroll', actualizarHeader, { passive: true });
+
+  // ---------- Menú móvil ----------
+  var btnMenu = document.getElementById('btnMenu');
+  var navMovil = document.getElementById('navMovil');
+  btnMenu.addEventListener('click', function () {
+    btnMenu.classList.toggle('abierto');
+    navMovil.classList.toggle('abierto');
+  });
+  navMovil.querySelectorAll('a').forEach(function (link) {
+    link.addEventListener('click', function () {
+      btnMenu.classList.remove('abierto');
+      navMovil.classList.remove('abierto');
+    });
+  });
+
+  // ---------- Scroll reveal ----------
+  var reveals = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    reveals.forEach(function (el) { observer.observe(el); });
+  } else {
+    reveals.forEach(function (el) { el.classList.add('visible'); });
+  }
+
+  // ---------- Carrusel de opiniones ----------
+  var slidesWrap = document.getElementById('carruselSlides');
+  var puntosWrap = document.getElementById('carruselPuntos');
+  var btnAnterior = document.getElementById('flechaAnterior');
+  var btnSiguiente = document.getElementById('flechaSiguiente');
+
+  if (slidesWrap) {
+    var slides = slidesWrap.children;
+    var total = slides.length;
+    var actual = 0;
+    var autoplay;
+
+    for (var i = 0; i < total; i++) {
+      var punto = document.createElement('button');
+      punto.className = 'punto-carrusel' + (i === 0 ? ' activo' : '');
+      punto.setAttribute('aria-label', 'Ir a opinión ' + (i + 1));
+      punto.addEventListener('click', function (idx) {
+        return function () { irASlide(idx); reiniciarAutoplay(); };
+      }(i));
+      puntosWrap.appendChild(punto);
+    }
+
+    function irASlide(idx) {
+      actual = (idx + total) % total;
+      slidesWrap.style.transform = 'translateX(-' + (actual * 100) + '%)';
+      puntosWrap.querySelectorAll('.punto-carrusel').forEach(function (p, pi) {
+        p.classList.toggle('activo', pi === actual);
+      });
+    }
+
+    function reiniciarAutoplay() {
+      clearInterval(autoplay);
+      autoplay = setInterval(function () { irASlide(actual + 1); }, 6000);
+    }
+
+    btnAnterior.addEventListener('click', function () { irASlide(actual - 1); reiniciarAutoplay(); });
+    btnSiguiente.addEventListener('click', function () { irASlide(actual + 1); reiniciarAutoplay(); });
+
+    reiniciarAutoplay();
+  }
+
+  // ---------- Scroll-spy del menú ----------
+  var navLinks = document.querySelectorAll('.nav-desktop a[href^="#"]');
+  var secciones = Array.prototype.slice.call(navLinks).map(function (link) {
+    return document.querySelector(link.getAttribute('href'));
+  }).filter(Boolean);
+
+  if (navLinks.length && secciones.length && 'IntersectionObserver' in window) {
+    var spyObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          var id = '#' + entry.target.id;
+          navLinks.forEach(function (link) {
+            link.classList.toggle('activo', link.getAttribute('href') === id);
+          });
+        }
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    secciones.forEach(function (sec) { spyObserver.observe(sec); });
+  }
+
+  // ---------- Botón volver arriba ----------
+  var btnVolverArriba = document.getElementById('btnVolverArriba');
+  if (btnVolverArriba) {
+    window.addEventListener('scroll', function () {
+      btnVolverArriba.classList.toggle('visible', window.scrollY > 700);
+    }, { passive: true });
+    btnVolverArriba.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  // ---------- Lightbox de galería ----------
+  var lightbox = document.getElementById('lightbox');
+  var lightboxContenido = document.getElementById('lightboxContenido');
+  var lightboxCerrar = document.getElementById('lightboxCerrar');
+  var itemsGaleria = document.querySelectorAll('.item-galeria');
+
+  function abrirLightbox(html) {
+    lightboxContenido.innerHTML = html;
+    lightbox.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+  }
+  function cerrarLightbox() {
+    lightbox.classList.remove('visible');
+    document.body.style.overflow = '';
+  }
+  itemsGaleria.forEach(function (item) {
+    item.addEventListener('click', function () {
+      var foto = item.querySelector('.foto-real');
+      var placeholder = item.querySelector('.img-placeholder');
+      if (foto) {
+        abrirLightbox('<img src="' + foto.src + '" alt="' + foto.alt + '" style="width:100%;height:100%;object-fit:contain;">');
+      } else {
+        abrirLightbox(placeholder ? placeholder.outerHTML : '');
+      }
+    });
+  });
+  if (lightboxCerrar) lightboxCerrar.addEventListener('click', cerrarLightbox);
+  if (lightbox) {
+    lightbox.addEventListener('click', function (e) {
+      if (e.target === lightbox) cerrarLightbox();
+    });
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') cerrarLightbox();
+  });
+
+  // ---------- Banner de cookies ----------
+  var cookiesBanner = document.getElementById('cookiesBanner');
+  var btnAceptar = document.getElementById('btnAceptarCookies');
+  var btnRechazar = document.getElementById('btnRechazarCookies');
+  var CLAVE_COOKIES = 'vivero_cookies_decision';
+
+  if (cookiesBanner && !localStorage.getItem(CLAVE_COOKIES)) {
+    setTimeout(function () { cookiesBanner.classList.add('visible'); }, 800);
+  }
+  function ocultarBanner() { cookiesBanner.classList.remove('visible'); }
+  if (btnAceptar) btnAceptar.addEventListener('click', function () {
+    localStorage.setItem(CLAVE_COOKIES, 'aceptado');
+    ocultarBanner();
+  });
+  if (btnRechazar) btnRechazar.addEventListener('click', function () {
+    localStorage.setItem(CLAVE_COOKIES, 'rechazado');
+    ocultarBanner();
+  });
+
+});

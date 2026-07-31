@@ -1,0 +1,16 @@
+{
+  "name": "Juan González Vivero",
+  "short_name": "J.G. Vivero",
+  "description": "Centro de jardinería y vivero en Alhaurín el Grande (Málaga)",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FBF8F1",
+  "theme_color": "#3F5B3D",
+  "icons": [
+    {
+      "src": "img/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
